@@ -4,15 +4,8 @@ import TaskBoard from './components/TaskBoard';
 import TaskForm from './components/TaskForm';
 import { subscribeToTasks, addTask, updateTask, deleteTask } from './lib/firestore';
 
-// Mock data for initial display
-const initialTasks = [
-    { id: 1, title: 'デザイン作成', description: 'トップページのラフ案を作成する', status: 'done', assignee: '田中' },
-    { id: 2, title: 'フロントエンド実装', description: 'Reactでコンポーネントを作成', status: 'in-progress', assignee: '鈴木' },
-    { id: 3, title: 'API連携', description: 'Firebaseとの通信処理を実装', status: 'todo', assignee: '佐藤' },
-];
-
 function App() {
-    const [tasks, setTasks] = useState(initialTasks);
+    const [tasks, setTasks] = useState([]);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
 
@@ -20,10 +13,7 @@ function App() {
     useEffect(() => {
         try {
             const unsubscribe = subscribeToTasks((updatedTasks) => {
-                // Only update if we actually get data back
-                if (updatedTasks.length > 0) {
-                    setTasks(updatedTasks);
-                }
+                setTasks(updatedTasks);
             });
             return () => unsubscribe();
         } catch (error) {
