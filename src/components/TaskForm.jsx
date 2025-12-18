@@ -5,6 +5,8 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('todo');
     const [assignee, setAssignee] = useState('');
+    const [dueDate, setDueDate] = useState('');
+    const [priority, setPriority] = useState('medium');
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -14,12 +16,16 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
             setDescription(initialData.description || '');
             setStatus(initialData.status);
             setAssignee(initialData.assignee || '');
+            setDueDate(initialData.dueDate || '');
+            setPriority(initialData.priority || 'medium');
             setShowDeleteConfirm(false);
         } else {
             setTitle('');
             setDescription('');
             setStatus('todo');
             setAssignee('');
+            setDueDate('');
+            setPriority('medium');
             setShowDeleteConfirm(false);
         }
     }, [initialData, isOpen]);
@@ -34,6 +40,8 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
             description,
             status,
             assignee: assignee || '未割り当て',
+            dueDate,
+            priority,
             updatedAt: new Date(),
         });
         onClose();
@@ -93,6 +101,36 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
                             <option value="in-progress">進行中</option>
                             <option value="done">完了</option>
                         </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">納期</label>
+                            <input
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-slate-600"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">優先度</label>
+                            <div className="flex bg-slate-100 rounded-lg p-1">
+                                {['low', 'medium', 'high'].map((p) => (
+                                    <button
+                                        key={p}
+                                        type="button"
+                                        onClick={() => setPriority(p)}
+                                        className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${priority === p
+                                            ? 'bg-white text-slate-800 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700'
+                                            }`}
+                                    >
+                                        {p === 'high' ? '高' : p === 'medium' ? '中' : '低'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
                     <div>
