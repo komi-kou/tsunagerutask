@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import TaskBoard from './components/TaskBoard';
 import TaskForm from './components/TaskForm';
+import { subscribeToTasks, addTask, updateTask, deleteTask } from './lib/firestore';
 
 // Mock data for initial display
 const initialTasks = [
@@ -15,6 +16,21 @@ function App() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
 
+    // Subscribe to Firestore updates
+    useEffect(() => {
+        try {
+            const unsubscribe = subscribeToTasks((updatedTasks) => {
+                // Only update if we actually get data back
+                if (updatedTasks.length > 0) {
+                    setTasks(updatedTasks);
+                }
+            });
+            return () => unsubscribe();
+        } catch (error) {
+            console.log("Firestore connection failed, using local mode");
+        }
+    }, []);
+
     const handleAddTask = () => {
         setEditingTask(null);
         setIsFormOpen(true);
@@ -25,14 +41,32 @@ function App() {
         setIsFormOpen(true);
     };
 
-    const handleSaveTask = (taskData) => {
-        if (taskData.id) {
-            // Update existing
-            setTasks(tasks.map(t => t.id === taskData.id ? taskData : t));
+    const handleSaveTask = async (taskData) => {
+        // Optimistic / Local Update first
+        if (taskData._delete) {
+            setTasks(prev => prev.filter(t => t.id !== taskData.id));
+        } else if (taskData.id) {
+            setTasks(prev => prev.map(t => t.id === taskData.id ? taskData : t));
         } else {
-            // Create new
             const newTask = { ...taskData, id: Date.now() };
-            setTasks([...tasks, newTask]);
+            setTasks(prev => [...prev, newTask]);
+        }
+
+        // Try Firestore
+        try {
+            if (taskData._delete) {
+                await deleteTask(taskData.id);
+                return;
+            }
+
+            if (taskData.id) {
+                await updateTask(taskData);
+            } else {
+                await addTask(taskData);
+            }
+        } catch (error) {
+            console.error("Failed to save to Firestore (running locally):", error);
+            // Optional: Show a toast here
         }
     };
 

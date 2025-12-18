@@ -6,17 +6,21 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
     const [status, setStatus] = useState('todo');
     const [assignee, setAssignee] = useState('');
 
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
     useEffect(() => {
         if (initialData) {
             setTitle(initialData.title);
             setDescription(initialData.description || '');
             setStatus(initialData.status);
             setAssignee(initialData.assignee || '');
+            setShowDeleteConfirm(false);
         } else {
             setTitle('');
             setDescription('');
             setStatus('todo');
             setAssignee('');
+            setShowDeleteConfirm(false);
         }
     }, [initialData, isOpen]);
 
@@ -32,6 +36,11 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
             assignee: assignee || '未割り当て',
             updatedAt: new Date(),
         });
+        onClose();
+    };
+
+    const handleDelete = () => {
+        onSubmit({ ...initialData, _delete: true });
         onClose();
     };
 
@@ -97,20 +106,53 @@ export default function TaskForm({ isOpen, onClose, onSubmit, initialData }) {
                         />
                     </div>
 
-                    <div className="pt-2 flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
-                        >
-                            キャンセル
-                        </button>
-                        <button
-                            type="submit"
-                            className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
-                        >
-                            保存
-                        </button>
+                    <div className="pt-2">
+                        {showDeleteConfirm ? (
+                            <div className="flex flex-col gap-3 bg-red-50 p-4 rounded-lg border border-red-100">
+                                <p className="text-sm text-red-700 font-medium text-center">本当に削除しますか？</p>
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeleteConfirm(false)}
+                                        className="flex-1 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                                    >
+                                        キャンセル
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleDelete}
+                                        className="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 shadow-sm transition-all"
+                                    >
+                                        削除する
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-3">
+                                {initialData && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className="px-4 py-2 rounded-lg border border-red-200 text-red-600 font-medium hover:bg-red-50 transition-colors"
+                                    >
+                                        削除
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                                >
+                                    キャンセル
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
+                                >
+                                    保存
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </form>
             </div>
